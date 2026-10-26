@@ -1,0 +1,20 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" role="img" aria-labelledby="logo-title">
+  <title id="logo-title">Nour Academy</title>
+
+  <g transform="translate(4 8)">
+    <rect width="64" height="64" rx="16" fill="#EFF6FF"></rect>
+    <path d="M8 23 32 11 56 23 32 35Z" fill="#2563EB"></path>
+    <path d="M17 28V40Q32 51 47 40V28L32 36Z" fill="#1E40AF"></path>
+    <path d="M54 24V39" fill="none" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"></path>
+    <circle cx="54" cy="42" r="3" fill="#F59E0B"></circle>
+    <path d="M24 28 32 32 40 28" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"></path>
+  </g>
+
+  <text x="80" y="37" font-family="Arial, sans-serif" font-size="23" font-weight="700" fill="#1E40AF">
+    Nour Academy
+  </text>
+  <text x="81" y="55" font-family="Arial, sans-serif" font-size="10" fill="#475569">
+    Réussir aujourd’hui, construire demain
+  </text>
+</svg>
