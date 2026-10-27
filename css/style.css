@@ -1,36 +1,37 @@
 @import "tailwindcss";
 
 
-@theme {
+    @theme {
+      --color-primary: #2563EB;
+      --color-primary-hover: #1D4ED8;
+      --color-primary-light: #EFF6FF;
+      --color-navy: #0F172A;
+      --color-background: #F8FAFC;
+      --color-surface: #FFFFFF;
+      --color-text: #1E293B;
+      --color-muted: #64748B;
+      --color-border: #E2E8F0;
+      --color-success: #15803D;
+      --color-warning: #D97706;
+      --color-danger: #DC2626;
+      --font-sans: "Inter", sans-serif;
+      --radius-button: 8px;
+      --radius-input: 8px;
+      --radius-card: 12px;
+      --shadow-card: 0 2px 5px rgb(15 23 42 / 0.04);
+    }
 
-    --color-primary: #2563EB;
-  --color-primary-hover: #1D4ED8;
-  --color-primary-light: #EFF6FF;
 
-  --color-navy: #0F172A;
-  --color-background: #F8FAFC;
-  --color-surface: #FFFFFF;
-
-  --color-text: #1E293B;
-  --color-muted: #64748B;
-  --color-border: #E2E8F0;
-
-  --color-success: #15803D;
-  --color-success-hover: #166534;
-
-  --color-warning: #D97706;
-  --color-warning-hover: #B45309;
-
-  --color-danger: #DC2626;
-  --color-danger-hover: #B91C1C;
-
-  --font-sans: "Inter", sans-serif;
-
-  --radius-button: 8px;
-  --radius-input: 8px;
-  --radius-card: 16px;
-  --radius-modal: 16px;
-
-  --shadow-card: 0 1px 3px rgb(15 23 42 / 0.08);
-  --shadow-dropdown: 0 8px 24px rgb(15 23 42 / 0.12);
-}
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, sans-serif; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .nav-link.active { background: #EFF6FF; color: #2563EB; font-weight: 600; }
+    .nav-link { transition: background .15s, color .15s; }
+    .table-wrap { overflow-x: auto; }
+    .table-wrap table { min-width: 760px; }
+    @media (max-width: 1023px) {
+      #sidebar { transform: translateX(-100%); transition: transform .2s ease; }
+      #sidebar.open { transform: translateX(0); }
+      #overlay.show { display: block; }
+    }
