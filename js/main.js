@@ -18,26 +18,60 @@ console.log(getInscriptions()[0].statut);
 
 
 
+
 const buttons = document.querySelectorAll("[data-page]");
+const pages = document.querySelectorAll(".page");
 
 buttons.forEach(function(button) {
   button.addEventListener("click", function() {
 
     const pageName = button.dataset.page;
 
-    const dashboard = document.querySelector("#page-dashboard");
-    const inscriptions = document.querySelector("#page-inscriptions");
+    pages.forEach(function(page) {
+      page.classList.remove("active");
+    });
 
-    dashboard.classList.remove("active");
-    inscriptions.classList.remove("active");
+    const targetPage = document.querySelector("#page-" + pageName);
 
-    if (pageName === "dashboard") {
-      dashboard.classList.add("active");
+    if (targetPage) {
+      targetPage.classList.add("active");
     }
 
-    if (pageName === "inscriptions") {
-      inscriptions.classList.add("active");
-    }
 
+    const topTitle = document.querySelector("#topTitle");
+    const titles = {
+    dashboard: "Dashboard",
+    inscriptions: "Inscriptions",
+    incomplete: "Inscriptions incomplètes",
+    eleves: "Élèves",
+    centres: "Centres",
+    parametres: "Paramètres"
+    };
+    topTitle.textContent = titles[pageName];
+
+
+
+    const navLinks = document.querySelectorAll(".nav-link");
+    navLinks.forEach(function(link) {
+        link.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    if (window.innerWidth < 1024) {
+        sidebar.classList.remove("open");
+    }
   });
+});
+
+
+const sidebar = document.querySelector("#sidebar");
+const openMenu = document.querySelector("#openMenu");
+const closeMenu = document.querySelector("#closeMenu");
+
+openMenu.addEventListener("click", function() {
+  sidebar.classList.add("open");
+});
+closeMenu.addEventListener("click", function() {
+  sidebar.classList.remove("open");
 });
