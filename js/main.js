@@ -1,23 +1,5 @@
 import '../css/style.css'
 
-import { getInscriptions, saveInscriptions } from "./storage.js";
-
-const inscriptions = getInscriptions();
-
-console.log(inscriptions);
-console.log(inscriptions.length);
-console.log(inscriptions[0]);
-
-
-inscriptions[0].statut = "En attente";
-
-saveInscriptions(inscriptions);
-
-console.log(getInscriptions()[0].statut);
-
-
-
-
 
 const buttons = document.querySelectorAll("[data-page]");
 const pages = document.querySelectorAll(".page");
@@ -42,10 +24,6 @@ buttons.forEach(function(button) {
     const titles = {
     dashboard: "Dashboard",
     inscriptions: "Inscriptions",
-    incomplete: "Inscriptions incomplètes",
-    eleves: "Élèves",
-    centres: "Centres",
-    parametres: "Paramètres"
     };
     topTitle.textContent = titles[pageName];
 

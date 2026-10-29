@@ -1,8 +1,4 @@
 
-/* =========================
-   CONSTANTES
-========================= */
-
 export const niveaux = [
   "Primaire",
   "Collège",
@@ -16,10 +12,7 @@ export const centres = [
   { id: 3, nom: "Centre Marrakech", ville: "Marrakech" }
 ];
 
-/* =========================
-   COURS
-   Prix en DH par mois
-========================= */
+
 
 export const cours = [
   {id: 1,nom: "Mathématiques",niveau: "Primaire",prix: 300,centreId: 1,jours: ["Lundi", "Mercredi"],heureDebut: "16:00",heureFin: "17:30"},
@@ -36,9 +29,6 @@ export const cours = [
   {id: 12,nom: "Préparation Bac",niveau: "2BAC",prix: 500,centreId: 3,jours: ["Samedi", "Dimanche"],heureDebut: "09:00",heureFin: "11:00"}
 ];
 
-/* =========================
-   PARENTS
-========================= */
 
 export const parents = [
   {id: 1,nom: "Amrani",prenom: "Mohamed",telephone: "0611111111",email: "mohamed.amrani@example.com"},
@@ -53,10 +43,6 @@ export const parents = [
   {id: 10,nom: "Mansouri",prenom: "Hajar",telephone: "0600000001",email: "hajar.mansouri@example.com"}
 ];
 
-/* =========================
-   ELEVES
-   parentId = liaison parent/enfant
-========================= */
 
 export const eleves = [
   { id: 1, nom: "Amrani", prenom: "Adam", niveau: "Primaire", parentId: 1 },
@@ -81,9 +67,6 @@ export const eleves = [
   { id: 20, nom: "Mansouri", prenom: "Salim", niveau: "2BAC", parentId: 10 }
 ];
 
-/* =========================
-   DOCUMENTS REQUIS
-========================= */
 
 export const documentsRequis = [
   { id: 1, nom: "Copie CIN du parent" },
@@ -116,156 +99,27 @@ export const inscriptions = [
   { id: 20, eleveId: 20, coursId: 8, centreId: 2, date: "2026-09-20", montantPaye: 250, documentsManquants: ["Certificat de scolarité"] }
 ];
 
+const STORAGE_KEY = "inscriptions";
 
-export function getSeedData() {
-  return JSON.parse(JSON.stringify({
-    centres,
-    cours,
-    parents,
-    eleves,
-    inscriptions,
-    documentsRequis,
-    niveaux
-  }));
-}
+export function getInscriptions() {
+  const dataSauvegardee = localStorage.getItem(STORAGE_KEY);
 
-export function getParentByEleve(eleveId) {
-  const eleve = eleves.find(e => e.id === eleveId);
-
-  if (!eleve) return null;
-
-  return parents.find(p => p.id === eleve.parentId) ?? null;
-}
-
-export function getElevesByParent(parentId) {
-  return eleves.filter(e => e.parentId === parentId);
-}
-
-export function getCoursByCentre(centreId) {
-  return cours.filter(c => c.centreId === centreId);
-}
-
-export function getCoursByNiveau(niveau) {
-  return cours.filter(c => c.niveau === niveau);
-}
-
-export function getInscriptionsByEleve(eleveId) {
-  return inscriptions.filter(i => i.eleveId === eleveId);
-}
-
-export function getInscriptionsByParent(parentId) {
-  const enfants = getElevesByParent(parentId);
-  const idsEnfants = enfants.map(e => e.id);
-
-  return inscriptions.filter(i => idsEnfants.includes(i.eleveId));
-}
-
-export function getCoursByInscription(inscription) {
-  return cours.find(c => c.id === inscription.coursId) ?? null;
-}
-
-export function getMontantRestant(inscription) {
-  const coursInscrit = getCoursByInscription(inscription);
-
-  if (!coursInscrit) return 0;
-
-  return Math.max(
-    0,
-    coursInscrit.prix - inscription.montantPaye
-  );
-}
-
-export function getStatutPaiement(inscription) {
-  const coursInscrit = getCoursByInscription(inscription);
-
-  if (!coursInscrit) return "Inconnu";
-
-  if (inscription.montantPaye <= 0) {
-    return "Non payé";
+  if (dataSauvegardee !== null) {
+    return JSON.parse(dataSauvegardee);
   }
 
-  if (inscription.montantPaye < coursInscrit.prix) {
-    return "Partiellement payé";
-  }
-
-  return "Payé";
-}
-
-export function isDossierComplet(inscription) {
-  return inscription.documentsManquants.length === 0;
-}
-
-export function getStatistiquesAdmin() {
-  const totalPaye = inscriptions.reduce(
-    (total, i) => total + i.montantPaye,
-    0
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(inscriptionsInitiales)
   );
 
-  const totalRestant = inscriptions.reduce(
-    (total, i) => total + getMontantRestant(i),
-    0
+  return inscriptionsInitiales;
+}
+
+
+export function saveInscriptions(inscriptions) {
+  localStorage.setItem(
+    "inscriptions",
+    JSON.stringify(inscriptions)
   );
-
-  return {
-    totalCentres: centres.length,
-    totalCours: cours.length,
-    totalParents: parents.length,
-    totalEleves: eleves.length,
-    totalInscriptions: inscriptions.length,
-    totalPaye,
-    totalRestant,
-    dossiersIncomplets: inscriptions.filter(
-      i => !isDossierComplet(i)
-    ).length
-  };
 }
-
-
-
-export const validators = {
-  nom: /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s'-]{1,49}$/,
-  telephone: /^(?:\+212|0)(?:[5-7]\d{8})$/,
-  email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  date: /^\d{4}-\d{2}-\d{2}$/
-};
-
-
-export function validerInscription(
-  form,
-  state = { eleves, cours, centres }
-) {
-  const erreurs = [];
-
-  const eleveId = Number(form.eleveId);
-  const coursId = Number(form.coursId);
-  const centreId = Number(form.centreId);
-
-  const eleve = state.eleves.find(e => e.id === eleveId);
-  const coursChoisi = state.cours.find(c => c.id === coursId);
-  const centre = state.centres.find(c => c.id === centreId);
-
-  if (!eleve) erreurs.push("Veuillez sélectionner un élève valide.");
-  if (!coursChoisi) erreurs.push("Veuillez sélectionner un cours valide.");
-  if (!centre) erreurs.push("Veuillez sélectionner un centre valide.");
-
-  if (!validators.date.test(form.date || "")) {
-    erreurs.push("Veuillez saisir une date valide.");
-  }
-
-  if (!Number.isFinite(Number(form.montantPaye)) ||
-      Number(form.montantPaye) < 0) {
-    erreurs.push("Le montant payé doit être positif ou nul.");
-  }
-
-  if (eleve && coursChoisi && eleve.niveau !== coursChoisi.niveau) {
-    erreurs.push("Le niveau du cours ne correspond pas à celui de l'élève.");
-  }
-
-  if (coursChoisi && coursChoisi.centreId !== centreId) {
-    erreurs.push("Ce cours n'appartient pas au centre sélectionné.");
-  }
-
-  return erreurs;
-}
-
-
