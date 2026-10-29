@@ -92,10 +92,6 @@ export const documentsRequis = [
   { id: 4, nom: "Formulaire d'inscription" }
 ];
 
-/* =========================
-   INSCRIPTIONS
-   coursId et centreId doivent correspondre
-========================= */
 
 export const inscriptions = [
   { id: 1, eleveId: 1, coursId: 1, centreId: 1, date: "2026-09-01", montantPaye: 300, documentsManquants: [] },
@@ -120,11 +116,19 @@ export const inscriptions = [
   { id: 20, eleveId: 20, coursId: 8, centreId: 2, date: "2026-09-20", montantPaye: 250, documentsManquants: ["Certificat de scolarité"] }
 ];
 
-/* =========================
-   FONCTIONS DE LIAISON
-========================= */
 
-// Récupérer le parent d'un élève
+export function getSeedData() {
+  return JSON.parse(JSON.stringify({
+    centres,
+    cours,
+    parents,
+    eleves,
+    inscriptions,
+    documentsRequis,
+    niveaux
+  }));
+}
+
 export function getParentByEleve(eleveId) {
   const eleve = eleves.find(e => e.id === eleveId);
 
@@ -133,27 +137,22 @@ export function getParentByEleve(eleveId) {
   return parents.find(p => p.id === eleve.parentId) ?? null;
 }
 
-// Récupérer tous les enfants d'un parent
 export function getElevesByParent(parentId) {
   return eleves.filter(e => e.parentId === parentId);
 }
 
-// Récupérer les cours d'un centre
 export function getCoursByCentre(centreId) {
   return cours.filter(c => c.centreId === centreId);
 }
 
-// Récupérer les cours d'un niveau
 export function getCoursByNiveau(niveau) {
   return cours.filter(c => c.niveau === niveau);
 }
 
-// Récupérer les inscriptions d'un élève
 export function getInscriptionsByEleve(eleveId) {
   return inscriptions.filter(i => i.eleveId === eleveId);
 }
 
-// Récupérer les inscriptions d'un parent via ses enfants
 export function getInscriptionsByParent(parentId) {
   const enfants = getElevesByParent(parentId);
   const idsEnfants = enfants.map(e => e.id);
@@ -161,12 +160,10 @@ export function getInscriptionsByParent(parentId) {
   return inscriptions.filter(i => idsEnfants.includes(i.eleveId));
 }
 
-// Récupérer le cours d'une inscription
 export function getCoursByInscription(inscription) {
   return cours.find(c => c.id === inscription.coursId) ?? null;
 }
 
-// Montant restant à payer
 export function getMontantRestant(inscription) {
   const coursInscrit = getCoursByInscription(inscription);
 
@@ -178,7 +175,6 @@ export function getMontantRestant(inscription) {
   );
 }
 
-// Statut du paiement
 export function getStatutPaiement(inscription) {
   const coursInscrit = getCoursByInscription(inscription);
 
@@ -195,12 +191,10 @@ export function getStatutPaiement(inscription) {
   return "Payé";
 }
 
-// Vérifier si le dossier est complet
 export function isDossierComplet(inscription) {
   return inscription.documentsManquants.length === 0;
 }
 
-// Statistiques pour le dashboard admin
 export function getStatistiquesAdmin() {
   const totalPaye = inscriptions.reduce(
     (total, i) => total + i.montantPaye,
@@ -225,3 +219,53 @@ export function getStatistiquesAdmin() {
     ).length
   };
 }
+
+
+
+export const validators = {
+  nom: /^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s'-]{1,49}$/,
+  telephone: /^(?:\+212|0)(?:[5-7]\d{8})$/,
+  email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  date: /^\d{4}-\d{2}-\d{2}$/
+};
+
+
+export function validerInscription(
+  form,
+  state = { eleves, cours, centres }
+) {
+  const erreurs = [];
+
+  const eleveId = Number(form.eleveId);
+  const coursId = Number(form.coursId);
+  const centreId = Number(form.centreId);
+
+  const eleve = state.eleves.find(e => e.id === eleveId);
+  const coursChoisi = state.cours.find(c => c.id === coursId);
+  const centre = state.centres.find(c => c.id === centreId);
+
+  if (!eleve) erreurs.push("Veuillez sélectionner un élève valide.");
+  if (!coursChoisi) erreurs.push("Veuillez sélectionner un cours valide.");
+  if (!centre) erreurs.push("Veuillez sélectionner un centre valide.");
+
+  if (!validators.date.test(form.date || "")) {
+    erreurs.push("Veuillez saisir une date valide.");
+  }
+
+  if (!Number.isFinite(Number(form.montantPaye)) ||
+      Number(form.montantPaye) < 0) {
+    erreurs.push("Le montant payé doit être positif ou nul.");
+  }
+
+  if (eleve && coursChoisi && eleve.niveau !== coursChoisi.niveau) {
+    erreurs.push("Le niveau du cours ne correspond pas à celui de l'élève.");
+  }
+
+  if (coursChoisi && coursChoisi.centreId !== centreId) {
+    erreurs.push("Ce cours n'appartient pas au centre sélectionné.");
+  }
+
+  return erreurs;
+}
+
+
