@@ -48,7 +48,6 @@
     </header>
 
     <main class="min-h-[calc(100vh-72px)] bg-background px-4 py-6 sm:px-7 sm:py-7 xl:px-8">
-      <!-- DASHBOARD -->
       <section id="page-dashboard" class="page active">
         <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -75,6 +74,22 @@
             <div class="flex items-start justify-between"><p class="text-[9px] text-muted">En attente</p><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50 text-sm text-violet-600">♧</span></div>
             <p class="mt-1 text-xl font-bold tracking-tight text-slate-900">43</p><p class="mt-2 text-[8px] font-medium text-success">À traiter cette semaine</p>
           </article>
+          <article class="rounded-xl border border-border bg-white p-4 shadow-card">
+            <div class="flex items-start justify-between"><p class="text-[9px] text-muted">Totale des revenue</p><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50 text-sm text-violet-600">♧</span></div>
+            <p class="mt-1 text-xl font-bold tracking-tight text-slate-900">43</p><p class="mt-2 text-[8px] font-medium text-success">À traiter cette semaine</p>
+          </article>
+          <article class="rounded-xl border border-border bg-white p-4 shadow-card">
+            <div class="flex items-start justify-between"><p class="text-[9px] text-muted">En attente</p><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50 text-sm text-violet-600">♧</span></div>
+            <p class="mt-1 text-xl font-bold tracking-tight text-slate-900">43</p><p class="mt-2 text-[8px] font-medium text-success">À traiter cette semaine</p>
+          </article>
+          <article class="rounded-xl border border-border bg-white p-4 shadow-card">
+            <div class="flex items-start justify-between"><p class="text-[9px] text-muted">En attente</p><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50 text-sm text-violet-600">♧</span></div>
+            <p class="mt-1 text-xl font-bold tracking-tight text-slate-900">43</p><p class="mt-2 text-[8px] font-medium text-success">À traiter cette semaine</p>
+          </article>
+          <article class="rounded-xl border border-border bg-white p-4 shadow-card">
+            <div class="flex items-start justify-between"><p class="text-[9px] text-muted">En attente</p><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50 text-sm text-violet-600">♧</span></div>
+            <p class="mt-1 text-xl font-bold tracking-tight text-slate-900">43</p><p class="mt-2 text-[8px] font-medium text-success">À traiter cette semaine</p>
+          </article>
         </div>
 
         <div class="mx-auto mt-10  overflow-hidden rounded-xl border border-border bg-white shadow-card">
@@ -88,29 +103,137 @@
                 <tr><th class="px-3 py-3">Référence</th><th class="px-3 py-3">Nom et prénom</th><th class="px-3 py-3">Niveau</th><th class="px-3 py-3">Centre</th><th class="px-3 py-3">Date d'inscription</th><th class="px-3 py-3">État du dossier</th><th class="px-3 py-3">Actions</th></tr>
               </thead>
               <tbody id="recentRows" class="divide-y divide-slate-100 text-[8px]">
+
               </tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- INSCRIPTIONS -->
       <section id="page-inscriptions" class="page">
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div><h1 class="text-xl font-semibold text-navy">Inscriptions</h1><p class="mt-2 text-xs text-muted">Consultez et gérez toutes les demandes d'inscription.</p></div>
           <button data-action="new-registration" class="rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-white hover:bg-primary-hover">＋ Nouvelle inscription</button>
         </div>
         <div class="mb-4 flex flex-wrap gap-3 rounded-xl border border-border bg-white p-4 shadow-card">
-          <input id="registrationSearch" class="min-w-[180px] flex-1 rounded-lg border border-border px-3 py-2 text-xs outline-none focus:border-primary" placeholder="Rechercher par nom ou référence...">
-          <select id="statusFilter" class="rounded-lg border border-border bg-white px-3 py-2 text-xs"><option value="">Tous les statuts</option><option>Complet</option><option>Incomplet</option><option>En attente</option></select>
+
+          <input
+            id="registrationSearch"
+            type="text"
+            class="min-w-[180px] flex-1 rounded-lg border border-border px-3 py-2 text-xs"
+            placeholder="Rechercher par nom ou téléphone..."
+          >
+
+          <select id="statusFilter" class="rounded-lg border border-border bg-white px-3 py-2 text-xs">
+            <option value="">Tous les dossiers</option>
+            <option value="Complet">Complet</option>
+            <option value="Incomplet">Incomplet</option>
+          </select>
+
+          <select id="centreFilter" class="rounded-lg border border-border bg-white px-3 py-2 text-xs">
+            <option value="">Tous les centres</option>
+            <option value="CTR001">Nador Centre</option>
+            <option value="CTR002">Hay Al Matar</option>
+            <option value="CTR003">Selouane</option>
+          </select>
+
+          <select id="dateSort" class="rounded-lg border border-border bg-white px-3 py-2 text-xs">
+            <option value="">Trier par date</option>
+            <option value="croissant">Date croissante</option>
+            <option value="decroissant">Date décroissante</option>
+          </select>
+
         </div>
         <div class="overflow-hidden rounded-xl border border-border bg-white shadow-card">
-          <div class="table-wrap"><table class="w-full text-left text-xs"><thead class="bg-slate-50 text-[10px] uppercase text-muted"><tr><th class="px-4 py-3">Référence</th><th class="px-4 py-3">Nom et prénom</th><th class="px-4 py-3">Niveau</th><th class="px-4 py-3">Centre</th><th class="px-4 py-3">Date</th><th class="px-4 py-3">État du dossier</th><th class="px-4 py-3">Actions</th></tr></thead><tbody id="allRows" class="divide-y divide-slate-100"></tbody></table></div>
+          <div class="table-wrap">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-[10px] uppercase text-muted">
+                <tr>
+                  <th class="px-4 py-3">Référence</th>
+                  <th class="px-4 py-3">Nom et prénom</th>
+                  <th class="px-4 py-3">Niveau</th>
+                  <th class="px-4 py-3">Centre</th>
+                  <th class="px-4 py-3">Date</th>
+                  <th class="p-4 text-left">Cour </th>
+                  <th class="p-4 text-left">Prix de Cour </th>
+                  <th class="p-4 text-left">Prix payé (MAD)</th>
+                  <th class="p-4 text-left">Reste à payer (MAD)</th>
+                  <th class="px-4 py-3">État du dossier</th>
+                  <th class="px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="allRows" class="divide-y divide-slate-100">
+
+
+              </tbody>
+            </table>
+            
+          </div>
         </div>
       </section>
 
     </main>
   </div>
+
+<div id="zone-modification" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+
+    <h2 class="mb-4 text-lg font-semibold text-slate-800">
+      Modifier une inscription
+    </h2>
+
+    <form id="form-modification" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <input type="hidden" id="mod-id">
+
+      <div>
+        <label for="mod-date" class="mb-1 block text-sm font-medium">
+          Date d'inscription
+        </label>
+        <input
+          type="date"
+          id="mod-date"
+          class="w-full rounded-lg border border-slate-300 p-2"
+        >
+      </div>
+      <div>
+        <label for="mod-etat" class="mb-2 block text-sm font-medium">
+          État du dossier
+        </label>
+
+        <select id="mod-etat"
+                class="w-full rounded-lg border border-slate-300 p-2">
+          <option value="Complet">Complet</option>
+          <option value="Incomplet">Incomplet</option>
+        </select>
+      </div>
+      <div>
+        <label for="mod-prix" class="mb-2 block text-sm font-medium">
+          Montant payé (MAD)
+        </label>
+
+        <input
+          type="number"
+          id="mod-prix"
+          min="0"
+          class="w-full rounded-lg border border-slate-300 p-2"
+          required
+        >
+      </div>
+
+      <div class="flex gap-2 md:col-span-2">
+        <button type="submit" class="rounded-xl bg-blue-600 px-4 py-2 text-white">
+          Enregistrer
+        </button>
+
+        <button type="button" id="annuler-modification" class="rounded-xl bg-slate-200 px-4 py-2 text-slate-700">
+          Annuler
+        </button>
+      </div>
+    </form>
+    </div>
+  </div>
+
+
 
   <dialog id="formDialog" class="w-[calc(100%-2rem)] max-w-md rounded-xl p-0 shadow-2xl backdrop:bg-slate-900/40">
     <form id="genericForm" class="p-5">
@@ -122,6 +245,8 @@
   <div id="toast" class="fixed bottom-5 right-5 z-50 hidden max-w-sm rounded-lg bg-navy px-4 py-3 text-xs text-white shadow-lg" role="status"></div>
 
     <script type="module" src="./js/main.js"></script>
+    <script type="module" src="./js/inscriptions.js"></script>
+    <script type="module" src="./js/dashboard.js"></script>
   
 </body>
 
