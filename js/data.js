@@ -120,3 +120,33 @@ export function saveInscriptions(inscriptions) {
     JSON.stringify(inscriptions)
   );
 }
+
+export function getEleves() {
+    const data = localStorage.getItem("eleves");
+
+    if (data) {
+        return JSON.parse(data);
+    }
+
+    localStorage.setItem("eleves", JSON.stringify(eleves));
+    return eleves;
+}
+
+export function saveEleves(liste) {
+    localStorage.setItem("eleves", JSON.stringify(liste));
+}
+
+export function getParents() {
+    const data = localStorage.getItem("parents");
+
+    if (data) {
+        return JSON.parse(data);
+    }
+
+    localStorage.setItem("parents", JSON.stringify(parents));
+    return parents;
+}
+
+export function saveParents(liste) {
+    localStorage.setItem("parents", JSON.stringify(liste));
+}
