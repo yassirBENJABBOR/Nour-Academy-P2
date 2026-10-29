@@ -1,8 +1,4 @@
 
-/* =========================
-   CONSTANTES
-========================= */
-
 export const niveaux = [
   "Primaire",
   "Collège",
@@ -16,10 +12,7 @@ export const centres = [
   { id: 3, nom: "Centre Marrakech", ville: "Marrakech" }
 ];
 
-/* =========================
-   COURS
-   Prix en DH par mois
-========================= */
+
 
 export const cours = [
   {id: 1,nom: "Mathématiques",niveau: "Primaire",prix: 300,centreId: 1,jours: ["Lundi", "Mercredi"],heureDebut: "16:00",heureFin: "17:30"},
@@ -36,9 +29,6 @@ export const cours = [
   {id: 12,nom: "Préparation Bac",niveau: "2BAC",prix: 500,centreId: 3,jours: ["Samedi", "Dimanche"],heureDebut: "09:00",heureFin: "11:00"}
 ];
 
-/* =========================
-   PARENTS
-========================= */
 
 export const parents = [
   {id: 1,nom: "Amrani",prenom: "Mohamed",telephone: "0611111111",email: "mohamed.amrani@example.com"},
@@ -53,10 +43,6 @@ export const parents = [
   {id: 10,nom: "Mansouri",prenom: "Hajar",telephone: "0600000001",email: "hajar.mansouri@example.com"}
 ];
 
-/* =========================
-   ELEVES
-   parentId = liaison parent/enfant
-========================= */
 
 export const eleves = [
   { id: 1, nom: "Amrani", prenom: "Adam", niveau: "Primaire", parentId: 1 },
@@ -81,9 +67,6 @@ export const eleves = [
   { id: 20, nom: "Mansouri", prenom: "Salim", niveau: "2BAC", parentId: 10 }
 ];
 
-/* =========================
-   DOCUMENTS REQUIS
-========================= */
 
 export const documentsRequis = [
   { id: 1, nom: "Copie CIN du parent" },
@@ -92,10 +75,6 @@ export const documentsRequis = [
   { id: 4, nom: "Formulaire d'inscription" }
 ];
 
-/* =========================
-   INSCRIPTIONS
-   coursId et centreId doivent correspondre
-========================= */
 
 export const inscriptions = [
   { id: 1, eleveId: 1, coursId: 1, centreId: 1, date: "2026-09-01", montantPaye: 300, documentsManquants: [] },
@@ -120,108 +99,27 @@ export const inscriptions = [
   { id: 20, eleveId: 20, coursId: 8, centreId: 2, date: "2026-09-20", montantPaye: 250, documentsManquants: ["Certificat de scolarité"] }
 ];
 
-/* =========================
-   FONCTIONS DE LIAISON
-========================= */
+const STORAGE_KEY = "inscriptions";
 
-// Récupérer le parent d'un élève
-export function getParentByEleve(eleveId) {
-  const eleve = eleves.find(e => e.id === eleveId);
+export function getInscriptions() {
+  const dataSauvegardee = localStorage.getItem(STORAGE_KEY);
 
-  if (!eleve) return null;
-
-  return parents.find(p => p.id === eleve.parentId) ?? null;
-}
-
-// Récupérer tous les enfants d'un parent
-export function getElevesByParent(parentId) {
-  return eleves.filter(e => e.parentId === parentId);
-}
-
-// Récupérer les cours d'un centre
-export function getCoursByCentre(centreId) {
-  return cours.filter(c => c.centreId === centreId);
-}
-
-// Récupérer les cours d'un niveau
-export function getCoursByNiveau(niveau) {
-  return cours.filter(c => c.niveau === niveau);
-}
-
-// Récupérer les inscriptions d'un élève
-export function getInscriptionsByEleve(eleveId) {
-  return inscriptions.filter(i => i.eleveId === eleveId);
-}
-
-// Récupérer les inscriptions d'un parent via ses enfants
-export function getInscriptionsByParent(parentId) {
-  const enfants = getElevesByParent(parentId);
-  const idsEnfants = enfants.map(e => e.id);
-
-  return inscriptions.filter(i => idsEnfants.includes(i.eleveId));
-}
-
-// Récupérer le cours d'une inscription
-export function getCoursByInscription(inscription) {
-  return cours.find(c => c.id === inscription.coursId) ?? null;
-}
-
-// Montant restant à payer
-export function getMontantRestant(inscription) {
-  const coursInscrit = getCoursByInscription(inscription);
-
-  if (!coursInscrit) return 0;
-
-  return Math.max(
-    0,
-    coursInscrit.prix - inscription.montantPaye
-  );
-}
-
-// Statut du paiement
-export function getStatutPaiement(inscription) {
-  const coursInscrit = getCoursByInscription(inscription);
-
-  if (!coursInscrit) return "Inconnu";
-
-  if (inscription.montantPaye <= 0) {
-    return "Non payé";
+  if (dataSauvegardee !== null) {
+    return JSON.parse(dataSauvegardee);
   }
 
-  if (inscription.montantPaye < coursInscrit.prix) {
-    return "Partiellement payé";
-  }
-
-  return "Payé";
-}
-
-// Vérifier si le dossier est complet
-export function isDossierComplet(inscription) {
-  return inscription.documentsManquants.length === 0;
-}
-
-// Statistiques pour le dashboard admin
-export function getStatistiquesAdmin() {
-  const totalPaye = inscriptions.reduce(
-    (total, i) => total + i.montantPaye,
-    0
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(inscriptionsInitiales)
   );
 
-  const totalRestant = inscriptions.reduce(
-    (total, i) => total + getMontantRestant(i),
-    0
-  );
+  return inscriptionsInitiales;
+}
 
-  return {
-    totalCentres: centres.length,
-    totalCours: cours.length,
-    totalParents: parents.length,
-    totalEleves: eleves.length,
-    totalInscriptions: inscriptions.length,
-    totalPaye,
-    totalRestant,
-    dossiersIncomplets: inscriptions.filter(
-      i => !isDossierComplet(i)
-    ).length
-  };
+
+export function saveInscriptions(inscriptions) {
+  localStorage.setItem(
+    "inscriptions",
+    JSON.stringify(inscriptions)
+  );
 }
