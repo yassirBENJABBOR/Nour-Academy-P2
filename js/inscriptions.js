@@ -1,11 +1,10 @@
-
 import {
-  eleves,
-  parents,
-  centres,
-  cours,
-  getInscriptions,
-  saveInscriptions
+    getEleves,
+    getParents,
+    centres,
+    cours,
+    getInscriptions,
+    saveInscriptions
 } from "./data.js";
 
 const allRows = document.querySelector("#allRows");
@@ -16,272 +15,286 @@ const modId = document.querySelector("#mod-id");
 const modEtat = document.querySelector("#mod-etat");
 const modPrix = document.querySelector("#mod-prix");
 
+const registrationSearch = document.querySelector("#registrationSearch");
+const statusFilter = document.querySelector("#statusFilter");
+const centreFilter = document.querySelector("#centreFilter");
+const dateSort = document.querySelector("#dateSort");
 
-function afficherToutesInscriptions() {
-  const listeInscriptions = getInscriptions();
+function appliquerFiltres(listeInscriptions) {
+    const eleves = getEleves();
+    const parents = getParents();
 
-  allRows.innerHTML = "";
+    const recherche = registrationSearch.value.toLowerCase().trim();
 
-  if (listeInscriptions.length === 0) {
-    allRows.innerHTML = `
-      <tr>
-        <td colspan="11" class="p-4 text-center text-slate-500">
-          Aucune inscription trouvée.
-        </td>
-      </tr>
-    `;
-    return;
-  }
+    let resultat = listeInscriptions.filter(function (inscription) {
+        const eleve = eleves.find(function (e) {
+            return e.id === inscription.eleveId;
+        });
 
-listeInscriptions.forEach(function (inscription) {
-    const eleve = eleves.find(function (e) {
-      return e.id === inscription.eleveId;
+        if (!eleve) {
+            return false;
+        }
+
+        const parent = parents.find(function (p) {
+            return p.id === eleve.parentId;
+        });
+
+        const nomComplet = (eleve.prenom + " " + eleve.nom).toLowerCase();
+        const telephone = parent ? parent.telephone : "";
+
+        return nomComplet.includes(recherche) ||
+               telephone.includes(recherche);
     });
 
-    const parent = parents.find(function (p) {
-        return p.id === eleve.parentId;
-    });
+    const etatChoisi = statusFilter.value;
 
-    const coursChoisi = cours.find(function (c) {
-      return c.id === inscription.coursId;
-    });
+    if (etatChoisi !== "") {
+        resultat = resultat.filter(function (inscription) {
+            const documents = inscription.documentsManquants || [];
+            const etat = documents.length === 0 ? "Complet" : "Incomplet";
 
-
-    const prixCours = coursChoisi ? coursChoisi.prix : 0;
-    const prixPaye = inscription.montantPaye || 0;
-    const resteAPayer = Math.max(0, prixCours - prixPaye);
-
-    const centre = centres.find(function (c) {
-      return c.id === inscription.centreId;
-    });
-
-    if (!eleve || !centre) {
-      return;
+            return etat === etatChoisi;
+        });
     }
 
-    const dateInscription = inscription.date || inscription.dateInscription;
+    const centreChoisi = centreFilter.value;
 
-    const dateValide = dateInscription
-      ? new Date(dateInscription + "T12:00:00")
-      : null;
+    if (centreChoisi !== "") {
+        resultat = resultat.filter(function (inscription) {
+            return inscription.centreId === centreChoisi;
+        });
+    }
 
-    const dateAffichee =
-      dateValide && !Number.isNaN(dateValide.getTime())
-        ? dateValide.toLocaleDateString("fr-FR")
-        : "Date non disponible";
+    const tri = dateSort.value;
 
-    const documentsManquants = Array.isArray(
-      inscription.documentsManquants
-    )
-      ? inscription.documentsManquants
-      : [];
+    if (tri !== "") {
+        resultat.sort(function (a, b) {
+            const dateA = new Date(a.date || a.dateInscription).getTime() || 0;
+            const dateB = new Date(b.date || b.dateInscription).getTime() || 0;
 
-    const dossierComplet = documentsManquants.length === 0;
+            if (tri === "croissant") {
+                return dateA - dateB;
+            }
 
-    const etat = dossierComplet ? "Complet" : "Incomplet";
+            return dateB - dateA;
+        });
+    }
 
-    const couleurEtat = dossierComplet
-      ? "bg-green-100 text-green-700"
-      : "bg-red-100 text-red-700";
+    return resultat;
+}
 
-    const ligne = document.createElement("tr");
+export function afficherToutesInscriptions() {
+    const eleves = getEleves();
+    const listeInscriptions = appliquerFiltres(getInscriptions());
 
-    ligne.className = "hover:bg-slate-50";
+    allRows.innerHTML = "";
 
-    ligne.innerHTML = `
-      <td class="p-4">${inscription.id}</td>
+    if (listeInscriptions.length === 0) {
+        allRows.innerHTML = `
+            <tr>
+                <td colspan="11" class="p-4 text-center text-slate-500">
+                    Aucune inscription trouvée.
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
-      <td class="p-4">
-        ${eleve.prenom} ${eleve.nom}
-      </td>
+    listeInscriptions.forEach(function (inscription) {
+        const eleve = eleves.find(function (e) {
+            return e.id === inscription.eleveId;
+        });
 
-      <td class="p-4">
-        ${eleve.niveau}
-      </td>
+        if (!eleve) {
+            return;
+        }
 
-      <td class="p-4">
-        ${centre.nom}
-      </td>
+        const coursChoisi = cours.find(function (c) {
+            return c.id === inscription.coursId;
+        });
 
-      <td class="p-4">
-        ${dateAffichee}
-      </td>
-        <td class="p-4">
-        ${coursChoisi ? coursChoisi.nom : "Cours inconnu"}
-        </td>
+        const centre = centres.find(function (c) {
+            return c.id === inscription.centreId;
+        });
 
-        <td class="p-4">
-        ${prixCours} MAD
-        </td>
+        if (!centre) {
+            return;
+        }
 
-        <td class="p-4">
-        ${prixPaye} MAD
-        </td>
+        const prixCours = coursChoisi ? coursChoisi.prix : 0;
+        const prixPaye = inscription.montantPaye || 0;
+        const resteAPayer = Math.max(0, prixCours - prixPaye);
 
-        <td class="p-4 font-semibold">
-        ${resteAPayer} MAD
-        </td>
+        const dateInscription = inscription.date || inscription.dateInscription;
 
-      <td class="p-4">
-        <span class="rounded-full px-3 py-1 text-sm ${couleurEtat}">
-          ${etat}
-        </span>
-      </td>
+        const dateValide = dateInscription
+            ? new Date(dateInscription + "T12:00:00")
+            : null;
 
-      <td class="p-4">
-        <div class="flex items-center gap-2">
+        const dateAffichee = dateValide && !Number.isNaN(dateValide.getTime())
+            ? dateValide.toLocaleDateString("fr-FR")
+            : "Date non disponible";
 
-          <button
-            type="button"
-            data-id="${inscription.id}"
-            class="btn-details rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100">
-            Détails
-          </button>
+        const documentsManquants = inscription.documentsManquants || [];
+        const dossierComplet = documentsManquants.length === 0;
 
-          <button
-            type="button"
-            data-id="${inscription.id}"
-            class="btn-modifier rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700">
-            Modifier
-          </button>
+        const etat = dossierComplet ? "Complet" : "Incomplet";
+        const couleurEtat = dossierComplet
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700";
 
-        </div>
-      </td>
-    `;
+        const ligne = document.createElement("tr");
 
-    allRows.appendChild(ligne);
-  });
+        ligne.className = "hover:bg-slate-50";
+
+        ligne.innerHTML = `
+            <td class="p-4">${inscription.id}</td>
+            <td class="p-4">${eleve.prenom} ${eleve.nom}</td>
+            <td class="p-4">${eleve.niveau}</td>
+            <td class="p-4">${centre.nom}</td>
+            <td class="p-4">${dateAffichee}</td>
+            <td class="p-4">${coursChoisi ? coursChoisi.nom : "Cours inconnu"}</td>
+            <td class="p-4">${prixCours} MAD</td>
+            <td class="p-4">${prixPaye} MAD</td>
+            <td class="p-4 font-semibold">${resteAPayer} MAD</td>
+
+            <td class="p-4">
+                <span class="rounded-full px-3 py-1 text-sm ${couleurEtat}">
+                    ${etat}
+                </span>
+            </td>
+
+            <td class="p-4">
+                <div class="flex items-center gap-2">
+                    <button
+                        type="button"
+                        data-id="${inscription.id}"
+                        class="btn-details rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100">
+                        Détails
+                    </button>
+
+                    <button
+                        type="button"
+                        data-id="${inscription.id}"
+                        class="btn-modifier rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700">
+                        Modifier
+                    </button>
+                </div>
+            </td>
+        `;
+
+        allRows.appendChild(ligne);
+    });
 }
 
 afficherToutesInscriptions();
 
+registrationSearch.addEventListener("input", afficherToutesInscriptions);
+statusFilter.addEventListener("change", afficherToutesInscriptions);
+centreFilter.addEventListener("change", afficherToutesInscriptions);
+dateSort.addEventListener("change", afficherToutesInscriptions);
+
 allRows.addEventListener("click", function (event) {
+    const boutonDetails = event.target.closest(".btn-details");
 
-  const boutonDetails = event.target.closest(".btn-details");
+    if (boutonDetails) {
+        const id = boutonDetails.dataset.id;
+        const inscription = getInscriptions().find(function (item) {
+            return item.id === id;
+        });
 
-  if (boutonDetails) {
-    const id = boutonDetails.dataset.id;
+        if (!inscription) {
+            return;
+        }
+
+        const eleve = getEleves().find(function (e) {
+            return e.id === inscription.eleveId;
+        });
+
+        const coursChoisi = cours.find(function (c) {
+            return c.id === inscription.coursId;
+        });
+
+        const centre = centres.find(function (c) {
+            return c.id === inscription.centreId;
+        });
+
+        const documentsManquants = inscription.documentsManquants || [];
+        const etat = documentsManquants.length === 0 ? "Complet" : "Incomplet";
+
+        alert(
+            "Inscription : " + inscription.id +
+            "\nÉlève : " + (eleve ? eleve.prenom + " " + eleve.nom : "Inconnu") +
+            "\nCours : " + (coursChoisi ? coursChoisi.nom : "Inconnu") +
+            "\nCentre : " + (centre ? centre.nom : "Inconnu") +
+            "\nÉtat du dossier : " + etat +
+            "\nDocuments manquants : " +
+            (documentsManquants.length > 0
+                ? documentsManquants.join(", ")
+                : "Aucun")
+        );
+
+        return;
+    }
+
+    const boutonModifier = event.target.closest(".btn-modifier");
+
+    if (!boutonModifier) {
+        return;
+    }
+
+    const id = boutonModifier.dataset.id;
+
+    const inscription = getInscriptions().find(function (item) {
+        return item.id === id;
+    });
+
+    if (!inscription) {
+        return;
+    }
+
+    modId.value = inscription.id;
+    modPrix.value = inscription.montantPaye || 0;
+
+    modEtat.value = (inscription.documentsManquants || []).length === 0
+        ? "Complet"
+        : "Incomplet";
+
+    zoneModification.classList.remove("hidden");
+});
+
+formModification.addEventListener("submit", function (event) {
+    event.preventDefault();
 
     const listeInscriptions = getInscriptions();
 
     const inscription = listeInscriptions.find(function (item) {
-      return item.id === id;
+        return item.id === modId.value;
     });
 
     if (!inscription) {
-      return;
+        return;
     }
-
-    const eleve = eleves.find(function (e) {
-      return e.id === inscription.eleveId;
-    });
-
-    const coursChoisi = cours.find(function (c) {
-      return c.id === inscription.coursId;
-    });
-
-    
-
-    const centre = centres.find(function (c) {
-      return c.id === inscription.centreId;
-    });
-
-    const documentsManquants = Array.isArray(
-      inscription.documentsManquants
-    )
-      ? inscription.documentsManquants
-      : [];
-
-    const etat =
-      documentsManquants.length === 0 ? "Complet" : "Incomplet";
-
-    alert(
-      "Inscription : " + inscription.id +
-      "\nÉlève : " + (eleve ? eleve.prenom + " " + eleve.nom : "Inconnu") +
-      "\nCours : " + (coursChoisi ? coursChoisi.nom : "Inconnu") +
-      "\nCentre : " + (centre ? centre.nom : "Inconnu") +
-      "\nÉtat du dossier : " + etat +
-      "\nDocuments manquants : " +
-      (documentsManquants.length > 0
-        ? documentsManquants.join(", ")
-        : "Aucun")
-    );
-
-    return;
-  }
-
-  const boutonModifier = event.target.closest(".btn-modifier");
-
-  if (!boutonModifier) {
-    return;
-  }
-
-  const id = boutonModifier.dataset.id;
-
-  const listeInscriptions = getInscriptions();
-
-  const inscription = listeInscriptions.find(function (item) {
-    return item.id === id;
-  });
-
-  if (!inscription) {
-    return;
-  }
-
-  modId.value = inscription.id;
-  modPrix.value = inscription.montantPaye || 0;
-
-  const documentsManquants = Array.isArray(
-    inscription.documentsManquants
-  )
-    ? inscription.documentsManquants
-    : [];
-
-  if (documentsManquants.length === 0) {
-    modEtat.value = "Complet";
-  } else {
-    modEtat.value = "Incomplet";
-  }
-
-  zoneModification.classList.remove("hidden");
-});
-
-formModification.addEventListener("submit", function (event) {
-  event.preventDefault();
-
-  const listeInscriptions = getInscriptions();
-
-  const inscription = listeInscriptions.find(function (item) {
-    return item.id === modId.value;
-  });
-
-  if (!inscription) {
-    return;
-  }
 
     inscription.montantPaye = Number(modPrix.value);
 
     if (modEtat.value === "Complet") {
-    inscription.documentsManquants = [];
+        inscription.documentsManquants = [];
     } else {
-    inscription.documentsManquants = ["Document manquant"];
+        inscription.documentsManquants = ["Document manquant"];
     }
 
-  saveInscriptions(listeInscriptions);
+    saveInscriptions(listeInscriptions);
 
-  afficherToutesInscriptions();
+    afficherToutesInscriptions();
 
-  zoneModification.classList.add("hidden");
+    zoneModification.classList.add("hidden");
 });
 
 const boutonAnnuler = document.querySelector("#annuler-modification");
 
 if (boutonAnnuler) {
-  boutonAnnuler.addEventListener("click", function () {
-    zoneModification.classList.add("hidden");
-  });
-}
-
-function filtrerInscriptions() {
-
+    boutonAnnuler.addEventListener("click", function () {
+        zoneModification.classList.add("hidden");
+    });
 }
