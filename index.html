@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./style.css">
+
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <title>Login</title>
 </head>
@@ -17,17 +17,16 @@
                         <input id="email" type="email" placeholder = "Enter Email" required class="w-full p-3 rounded-lg bg-white">
                     </div>
                     <div class="flex flex-col gap-2">
-                        <label for="password" class="text-white">Mode de passe</label>
+                        <label for="modePasse" class="text-white">Mode de passe</label>
                         <input id="modePasse" type="password" placeholder="Enter le mode de passe" name="passe" required class="w-full p-3 rounded-lg bg-white">
                     </div>
-                    <div class="flex justify-center pt-3 hover:red">
+                    <div class="flex justify-center pt-3">
     
-                        <button id="conecte" type="submit" class="bg-[#023e8a] text-white rounded-lg p-3 font-bold cursor-pointer hover:bg-blue-950">Conecte</button>
+                        <button id="connecter" type="submit" class="bg-[#023e8a] text-white rounded-lg p-3 font-bold cursor-pointer hover:bg-blue-950">Se connecter</button>
                     </div>
                 </form>
-            </div>
         </section>
     </main>
-    <script src="main.js"></script>
+    <script type="module" src="js/login.js"></script>
 </body>
 </html>
