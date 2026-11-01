@@ -101,24 +101,32 @@ export const inscriptions = [
 const STORAGE_KEY = "inscriptions";
 
 export function getInscriptions() {
-  const dataSauvegardee = localStorage.getItem(STORAGE_KEY);
 
-  if (dataSauvegardee !== null) {
-    return JSON.parse(dataSauvegardee);
-  }
+    const dataSauvegardee = localStorage.getItem(STORAGE_KEY);
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(inscriptions)
-  );
+    if (dataSauvegardee !== null) {
 
-  return inscriptions;
+        const liste = JSON.parse(dataSauvegardee);
+
+        if (liste.length > 0 && liste[0].date) {
+            return liste;
+        }
+    }
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(inscriptions)
+    );
+
+    return inscriptions;
 }
-export function saveInscriptions(inscriptions) {
-  localStorage.setItem(
-    "inscriptions",
-    JSON.stringify(inscriptions)
-  );
+
+export function saveInscriptions(liste) {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(liste)
+    );
 }
 
 export function getEleves() {

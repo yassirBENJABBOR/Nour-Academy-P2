@@ -17,6 +17,8 @@ const arr = [
 
 const passeRegex = /^(?=.*[^A-Za-z0-9]).{8,}$/
 const emailRegex = /^[a-z]+@nouracademy\.ma$/
+const textEmail = document.querySelector("#text-email")
+const textPasse = document.querySelector("#text-passe")
 
 form.addEventListener("submit", (event) => {
   event.preventDefault()
@@ -24,12 +26,14 @@ form.addEventListener("submit", (event) => {
   const passeValue = modePasse.value
 
     if (!emailRegex.test(emailValue)) {
-        alert("Email invalide ! Utilisez @nouracademy.ma");
-        return;
+      textEmail.textContent = "email est incorrect."
+      textEmail.className = "text-red-600 pt-1"
+      return;
     }
 
     if (!passeRegex.test(passeValue)) {
-        alert("Mot de passe invalide !");
+        textPasse.textContent = "Le mot de passe est incorrect."
+        textPasse.className = "text-red-600 pt-1"
         return;
     }
 
@@ -40,8 +44,14 @@ form.addEventListener("submit", (event) => {
   );
   if(user){
     window.location.href = "secretaria.html"
+  }else if(a.email === email.value){
+    textEmail.textContent = "email est incorrect."
+    textEmail.className = "text-red-600 pt-1"
+    return;
   }else{
-    alert("Email ou mot de passe incorrect !")
+    textPasse.textContent = "Le mot de passe est incorrect."
+    textPasse.className = "text-red-600 pt-1"
+    return;
   }
   
 })
