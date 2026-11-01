@@ -10,7 +10,6 @@ const tableauRecent = document.querySelector("#recentRows");
 
 const inscriptions = getInscriptions();
 const eleves = getEleves();
-
 totalInscrits.textContent = inscriptions.length;
 
 const inscriptionsPayees = inscriptions.filter((inscription) => {
