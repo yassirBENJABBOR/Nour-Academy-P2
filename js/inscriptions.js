@@ -135,13 +135,17 @@ export function afficherToutesInscriptions() {
             ? dateValide.toLocaleDateString("fr-FR")
             : "Date non disponible";
 
-        const documentsManquants = inscription.documentsManquants || [];
-        const dossierComplet = documentsManquants.length === 0;
+        const etat = inscription.etatDossier || "En attente";
 
-        const etat = dossierComplet ? "Complet" : "Incomplet";
-        const couleurEtat = dossierComplet
-            ? "bg-green-100 text-green-700"
-            : "bg-red-100 text-red-700";
+        let couleurEtat = "bg-yellow-100 text-yellow-700";
+
+        if (etat === "Complet") {
+            couleurEtat = "bg-green-100 text-green-700";
+        }
+
+        if (etat === "Incomplet") {
+            couleurEtat = "bg-red-100 text-red-700";
+        }
 
         const ligne = document.createElement("tr");
 
@@ -278,17 +282,16 @@ formModification.addEventListener("submit", function (event) {
 
     inscription.montantPaye = Number(modPrix.value);
 
-    if (modEtat.value === "Complet") {
-        inscription.documentsManquants = [];
-    } else {
-        inscription.documentsManquants = ["Document manquant"];
-    }
+    inscription.etatDossier = modEtat.value ;
 
     saveInscriptions(listeInscriptions);
 
     afficherToutesInscriptions();
 
     zoneModification.classList.add("hidden");
+
+
+    
 });
 
 const boutonAnnuler = document.querySelector("#annuler-modification");

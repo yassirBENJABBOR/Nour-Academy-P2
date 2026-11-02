@@ -39,7 +39,7 @@ openButtons.forEach(function (button) {
 });
 
 closeButton.addEventListener("click", fermerModal);
-cancelButton.addEventListener("click", fermerModal);
+cancelButtgiton.addEventListener("click", fermerModal);
 
 centres.forEach(function (centre) {
     centreSelect.innerHTML += `
@@ -208,7 +208,8 @@ form.addEventListener("submit", function (e) {
         centreId: centreId,
         date: date,
         montantPaye: montantPaye,
-        documentsManquants: documentsManquants
+        documentsManquants: documentsManquants,
+        etatdossier:  "En attente"
     };
 
     listeInscriptions.push(nouvelleInscription);
