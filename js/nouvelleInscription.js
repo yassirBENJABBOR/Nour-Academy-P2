@@ -1,3 +1,4 @@
+
 import {
     centres,
     cours,
@@ -6,7 +7,8 @@ import {
     getParents,
     saveParents,
     getInscriptions,
-    saveInscriptions
+    saveInscriptions,
+    documentsRequis
 } from "./data.js";
 
 import { afficherToutesInscriptions } from "./inscriptions.js";
@@ -26,6 +28,8 @@ const coursSelect = document.querySelector("#new-inscription-cours");
 const niveauSelect = document.querySelector("#new-eleve-niveau");
 const prixInput = document.querySelector("#new-inscription-prix");
 
+// Ouvrir et fermer le formulaire
+
 function ouvrirModal() {
     modal.classList.remove("hidden");
 }
@@ -39,13 +43,19 @@ openButtons.forEach(function (button) {
 });
 
 closeButton.addEventListener("click", fermerModal);
-cancelButtgiton.addEventListener("click", fermerModal);
+cancelButton.addEventListener("click", fermerModal);
+
+// Afficher les centres
 
 centres.forEach(function (centre) {
     centreSelect.innerHTML += `
-        <option value="${centre.id}">${centre.nom}</option>
+        <option value="${centre.id}">
+            ${centre.nom}
+        </option>
     `;
 });
+
+// Afficher les cours selon le centre et le niveau
 
 function afficherCours() {
     const centreId = centreSelect.value;
@@ -64,17 +74,23 @@ function afficherCours() {
 
     coursFiltres.forEach(function (c) {
         coursSelect.innerHTML += `
-            <option value="${c.id}">${c.nom} - ${c.prix} MAD</option>
+            <option value="${c.id}">
+                ${c.nom} - ${c.prix} MAD
+            </option>
         `;
     });
 
     if (coursFiltres.length === 0) {
-        coursSelect.innerHTML = `<option value="">Aucun cours disponible</option>`;
+        coursSelect.innerHTML = `
+            <option value="">Aucun cours disponible</option>
+        `;
     }
 }
 
 centreSelect.addEventListener("change", afficherCours);
 niveauSelect.addEventListener("change", afficherCours);
+
+// Afficher automatiquement le prix
 
 coursSelect.addEventListener("change", function () {
     const coursChoisi = cours.find(function (c) {
@@ -83,6 +99,8 @@ coursSelect.addEventListener("change", function () {
 
     prixInput.value = coursChoisi ? coursChoisi.prix : "";
 });
+
+// Générer les identifiants
 
 function genererId(prefixe, liste) {
     let maximum = 0;
@@ -97,6 +115,8 @@ function genererId(prefixe, liste) {
 
     return prefixe + String(maximum + 1).padStart(3, "0");
 }
+
+// Ajouter une nouvelle inscription
 
 form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -123,11 +143,13 @@ form.addEventListener("submit", function (e) {
     const listeInscriptions = getInscriptions();
 
     const coursChoisi = cours.find(function (c) {
-        return c.id === coursId;
+        return c.id === coursId &&
+               c.centreId === centreId &&
+               c.niveau === niveau;
     });
 
     if (!coursChoisi) {
-        alert("Veuillez choisir un cours.");
+        alert("Veuillez choisir un cours valide.");
         return;
     }
 
@@ -135,6 +157,8 @@ form.addEventListener("submit", function (e) {
         alert("Le montant payé doit être compris entre 0 et le prix du cours.");
         return;
     }
+
+    // Rechercher ou créer l'élève
 
     let eleve = listeEleves.find(function (e) {
         return e.nom.toLowerCase() === nomEleve.toLowerCase() &&
@@ -157,6 +181,8 @@ form.addEventListener("submit", function (e) {
         return;
     }
 
+    // Rechercher ou créer le parent
+
     let parent = listeParents.find(function (p) {
         return p.telephone === telephone;
     });
@@ -175,6 +201,8 @@ form.addEventListener("submit", function (e) {
 
     eleve.parentId = parent.id;
 
+    // Vérifier les doublons
+
     const doublon = listeInscriptions.find(function (i) {
         return i.eleveId === eleve.id && i.coursId === coursId;
     });
@@ -184,22 +212,24 @@ form.addEventListener("submit", function (e) {
         return;
     }
 
+    // Récupérer les documents reçus
+
     const documentsRecus = [];
 
-    form.querySelectorAll('input[name="documentsRecus"]:checked').forEach(function (input) {
-        documentsRecus.push(input.value);
+    form.querySelectorAll('input[name="documentsRecus"]:checked')
+        .forEach(function (input) {
+            documentsRecus.push(input.value);
+        });
+
+    const documentsManquants = documentsRequis
+    .map(function (document) {
+        return document.nom;
+    })
+    .filter(function (nomDocument) {
+        return !documentsRecus.includes(nomDocument);
     });
 
-    const tousLesDocuments = [
-        "Copie CIN du parent",
-        "Photo de l'élève",
-        "Certificat de scolarité",
-        "Formulaire d'inscription"
-    ];
-
-    const documentsManquants = tousLesDocuments.filter(function (document) {
-        return !documentsRecus.includes(document);
-    });
+    // Créer l'inscription
 
     const nouvelleInscription = {
         id: genererId("INS", listeInscriptions),
@@ -209,10 +239,12 @@ form.addEventListener("submit", function (e) {
         date: date,
         montantPaye: montantPaye,
         documentsManquants: documentsManquants,
-        etatdossier:  "En attente"
+        dossierVerifie: false
     };
 
     listeInscriptions.push(nouvelleInscription);
+
+    // Sauvegarder dans localStorage
 
     saveEleves(listeEleves);
     saveParents(listeParents);
@@ -223,8 +255,9 @@ form.addEventListener("submit", function (e) {
     alert("Inscription ajoutée avec succès !");
 
     form.reset();
-    prixInput.value = "";
+
     coursSelect.innerHTML = `<option value="">Choisir le cours</option>`;
+    prixInput.value = "";
 
     fermerModal();
 });

@@ -1,5 +1,11 @@
 
-import { centres, cours, getEleves, getInscriptions } from "./data.js";
+import {
+    centres,
+    cours,
+    getEleves,
+    getInscriptions,
+    getEtatDossier
+} from "./data.js";
 
 const totalInscrits = document.querySelector("#total-inscrits");
 const inscriptionsPayeesElement = document.querySelector("#total-payee");
@@ -51,11 +57,7 @@ cinqInscriptions.forEach((inscription) => {
     const eleve = eleves.find((e) => e.id === inscription.eleveId);
     const centre = centres.find((c) => c.id === inscription.centreId);
 
-    let etat = "Incomplet";
-
-    if (inscription.documentsManquants.length === 0) {
-        etat = "Complet";
-    }
+    const etat = getEtatDossier(inscription);
 
     const dateAffichee = new Date(inscription.date + "T00:00:00").toLocaleDateString("fr-FR");
 

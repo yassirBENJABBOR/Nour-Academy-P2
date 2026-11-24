@@ -1,24 +1,39 @@
+
 import {
     getEleves,
     getParents,
     centres,
     cours,
+    documentsRequis,
     getInscriptions,
-    saveInscriptions
+    saveInscriptions,
+    getEtatDossier
 } from "./data.js";
+
+// Éléments HTML
 
 const allRows = document.querySelector("#allRows");
 
 const zoneModification = document.querySelector("#zone-modification");
 const formModification = document.querySelector("#form-modification");
+
 const modId = document.querySelector("#mod-id");
-const modEtat = document.querySelector("#mod-etat");
+const modDate = document.querySelector("#mod-date");
 const modPrix = document.querySelector("#mod-prix");
+
+const modDocuments = document.querySelectorAll(
+    'input[name="modDocuments"]'
+);
+
+const boutonAnnuler = document.querySelector("#annuler-modification");
 
 const registrationSearch = document.querySelector("#registrationSearch");
 const statusFilter = document.querySelector("#statusFilter");
 const centreFilter = document.querySelector("#centreFilter");
 const dateSort = document.querySelector("#dateSort");
+
+
+// Filtrer les inscriptions
 
 function appliquerFiltres(listeInscriptions) {
     const eleves = getEleves();
@@ -39,23 +54,27 @@ function appliquerFiltres(listeInscriptions) {
             return p.id === eleve.parentId;
         });
 
-        const nomComplet = (eleve.prenom + " " + eleve.nom).toLowerCase();
+        const nomComplet = (
+            eleve.prenom + " " + eleve.nom
+        ).toLowerCase();
+
         const telephone = parent ? parent.telephone : "";
 
         return nomComplet.includes(recherche) ||
                telephone.includes(recherche);
     });
 
+    // Filtrer selon l'état du dossier
+
     const etatChoisi = statusFilter.value;
 
     if (etatChoisi !== "") {
         resultat = resultat.filter(function (inscription) {
-            const documents = inscription.documentsManquants || [];
-            const etat = documents.length === 0 ? "Complet" : "Incomplet";
-
-            return etat === etatChoisi;
+            return getEtatDossier(inscription) === etatChoisi;
         });
     }
+
+    // Filtrer selon le centre
 
     const centreChoisi = centreFilter.value;
 
@@ -64,6 +83,8 @@ function appliquerFiltres(listeInscriptions) {
             return inscription.centreId === centreChoisi;
         });
     }
+
+    // Trier selon la date
 
     const tri = dateSort.value;
 
@@ -82,6 +103,9 @@ function appliquerFiltres(listeInscriptions) {
 
     return resultat;
 }
+
+
+// Afficher toutes les inscriptions
 
 export function afficherToutesInscriptions() {
     const eleves = getEleves();
@@ -135,7 +159,7 @@ export function afficherToutesInscriptions() {
             ? dateValide.toLocaleDateString("fr-FR")
             : "Date non disponible";
 
-        const etat = inscription.etatDossier || "En attente";
+        const etat = getEtatDossier(inscription);
 
         let couleurEtat = "bg-yellow-100 text-yellow-700";
 
@@ -191,18 +215,31 @@ export function afficherToutesInscriptions() {
     });
 }
 
+
+// Premier affichage
+
 afficherToutesInscriptions();
+
+
+// Événements des filtres
 
 registrationSearch.addEventListener("input", afficherToutesInscriptions);
 statusFilter.addEventListener("change", afficherToutesInscriptions);
 centreFilter.addEventListener("change", afficherToutesInscriptions);
 dateSort.addEventListener("change", afficherToutesInscriptions);
 
+
+// Boutons Détails et Modifier
+
 allRows.addEventListener("click", function (event) {
+
+    // Bouton Détails
+
     const boutonDetails = event.target.closest(".btn-details");
 
     if (boutonDetails) {
         const id = boutonDetails.dataset.id;
+
         const inscription = getInscriptions().find(function (item) {
             return item.id === id;
         });
@@ -223,23 +260,56 @@ allRows.addEventListener("click", function (event) {
             return c.id === inscription.centreId;
         });
 
-        const documentsManquants = inscription.documentsManquants || [];
-        const etat = documentsManquants.length === 0 ? "Complet" : "Incomplet";
+        const documentsManquants = Array.isArray(inscription.documentsManquants)
+            ? inscription.documentsManquants
+            : [];
+
+        // Documents reçus = documents requis qui ne sont pas manquants
+
+        const documentsRecus = documentsRequis
+            .map(function (document) {
+                return document.nom;
+            })
+            .filter(function (nomDocument) {
+                return !documentsManquants.includes(nomDocument);
+            });
+
+        const etat = getEtatDossier(inscription);
 
         alert(
-            "Inscription : " + inscription.id +
-            "\nÉlève : " + (eleve ? eleve.prenom + " " + eleve.nom : "Inconnu") +
-            "\nCours : " + (coursChoisi ? coursChoisi.nom : "Inconnu") +
-            "\nCentre : " + (centre ? centre.nom : "Inconnu") +
+            "INSCRIPTION : " + inscription.id +
+
+            "\nÉlève : " +
+            (eleve ? eleve.prenom + " " + eleve.nom : "Inconnu") +
+
+            "\nCours : " +
+            (coursChoisi ? coursChoisi.nom : "Inconnu") +
+
+            "\nCentre : " +
+            (centre ? centre.nom : "Inconnu") +
+
             "\nÉtat du dossier : " + etat +
-            "\nDocuments manquants : " +
+
+            "\n\nDOCUMENTS REÇUS :\n" +
+            (documentsRecus.length > 0
+                ? documentsRecus.map(function (doc) {
+                    return "✓ " + doc;
+                }).join("\n")
+                : "Aucun document reçu") +
+
+            "\n\nDOCUMENTS MANQUANTS :\n" +
             (documentsManquants.length > 0
-                ? documentsManquants.join(", ")
-                : "Aucun")
+                ? documentsManquants.map(function (doc) {
+                    return "✗ " + doc;
+                }).join("\n")
+                : "Aucun document manquant")
         );
 
         return;
     }
+
+
+    // Bouton Modifier
 
     const boutonModifier = event.target.closest(".btn-modifier");
 
@@ -258,14 +328,24 @@ allRows.addEventListener("click", function (event) {
     }
 
     modId.value = inscription.id;
+    modDate.value = inscription.date || inscription.dateInscription || "";
     modPrix.value = inscription.montantPaye || 0;
 
-    modEtat.value = (inscription.documentsManquants || []).length === 0
-        ? "Complet"
-        : "Incomplet";
+    const documentsManquants = Array.isArray(inscription.documentsManquants)
+        ? inscription.documentsManquants
+        : [];
+
+    // Cocher automatiquement les documents déjà reçus
+
+    modDocuments.forEach(function (checkbox) {
+        checkbox.checked = !documentsManquants.includes(checkbox.value);
+    });
 
     zoneModification.classList.remove("hidden");
 });
+
+
+// Enregistrer la modification
 
 formModification.addEventListener("submit", function (event) {
     event.preventDefault();
@@ -280,9 +360,48 @@ formModification.addEventListener("submit", function (event) {
         return;
     }
 
-    inscription.montantPaye = Number(modPrix.value);
+    const nouveauMontant = Number(modPrix.value);
 
-    inscription.etatDossier = modEtat.value ;
+    const coursChoisi = cours.find(function (c) {
+        return c.id === inscription.coursId;
+    });
+
+    if (
+        nouveauMontant < 0 ||
+        (coursChoisi && nouveauMontant > coursChoisi.prix)
+    ) {
+        alert("Le montant payé doit être compris entre 0 et le prix du cours.");
+        return;
+    }
+
+    inscription.date = modDate.value;
+    inscription.montantPaye = nouveauMontant;
+
+    // Récupérer les documents cochés
+
+    const documentsRecus = [];
+
+    modDocuments.forEach(function (checkbox) {
+        if (checkbox.checked) {
+            documentsRecus.push(checkbox.value);
+        }
+    });
+
+    // Comparer les documents reçus avec les documents requis
+
+    inscription.documentsManquants = documentsRequis
+        .map(function (document) {
+            return document.nom;
+        })
+        .filter(function (nomDocument) {
+            return !documentsRecus.includes(nomDocument);
+        });
+
+    // Le dossier vient d'être vérifié
+
+    inscription.dossierVerifie = true;
+
+    // Sauvegarder dans localStorage
 
     saveInscriptions(listeInscriptions);
 
@@ -290,11 +409,11 @@ formModification.addEventListener("submit", function (event) {
 
     zoneModification.classList.add("hidden");
 
-
-    
+    alert("Modification enregistrée avec succès !");
 });
 
-const boutonAnnuler = document.querySelector("#annuler-modification");
+
+// Annuler la modification
 
 if (boutonAnnuler) {
     boutonAnnuler.addEventListener("click", function () {

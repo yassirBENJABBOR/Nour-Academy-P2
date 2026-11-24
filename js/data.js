@@ -101,32 +101,23 @@ export const inscriptions = [
 const STORAGE_KEY = "inscriptions";
 
 export function getInscriptions() {
-
     const dataSauvegardee = localStorage.getItem(STORAGE_KEY);
 
     if (dataSauvegardee !== null) {
-
         const liste = JSON.parse(dataSauvegardee);
 
-        if (liste.length > 0 && liste[0].date) {
+        if (Array.isArray(liste)) {
             return liste;
         }
     }
 
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(inscriptions)
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inscriptions));
 
     return inscriptions;
 }
 
 export function saveInscriptions(liste) {
-
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(liste)
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(liste));
 }
 
 export function getEleves() {
@@ -157,4 +148,24 @@ export function getParents() {
 
 export function saveParents(liste) {
     localStorage.setItem("parents", JSON.stringify(liste));
+}
+
+// Calculer automatiquement l'état du dossier
+
+export function getEtatDossier(inscription) {
+    if (inscription.dossierVerifie === false) {
+        return "En attente";
+    }
+
+    const documents = inscription.documentsManquants;
+
+    if (!Array.isArray(documents)) {
+        return "En attente";
+    }
+
+    if (documents.length === 0) {
+        return "Complet";
+    }
+
+    return "Incomplet";
 }
